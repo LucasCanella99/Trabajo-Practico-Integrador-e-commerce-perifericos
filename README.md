@@ -19,3 +19,4 @@
 ## CSS
 - Paleta de colores adecuada, acorde el logo.
 - Utilizacion de keyframe (o efectos) para el scroll, o header 
+- Utilizamos Css adecuado para un E-commerce, nada de utilizar animaciones exageradas.
