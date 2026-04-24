@@ -1,1 +1,14 @@
+
+venv/
+env/
+.env
+backend/venv/
+
+*.sqlite3
+
+
 __pycache__/
+*.py[cod]
+
+
+.vscode/
