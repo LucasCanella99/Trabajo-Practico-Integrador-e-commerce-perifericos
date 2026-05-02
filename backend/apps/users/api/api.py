@@ -43,6 +43,6 @@ def user_detail_api_view(request,pk= None): # Acá pide que aparte de la petici�
         #delete
         elif request.method == 'DELETE':
             user.delete()
-            return Response({'message': 'Usuario eliminado correctamente!'}, status= status.HTTP_204_OK)
+            return Response({'message': 'Usuario eliminado correctamente!'}, status= status.HTTP_200_OK) # S-Cambio: era 204_OK (no existe), acá podría usarse 204_NO_CONTENT o 200_OK, pero el único que admite un mensaje es 200, 204 no acepta un body por HTTP spec
 
     return Response({'message':'No se ha encontrado un usuario con estos datos'}, status= status.HTTP_404_NOT_FOUND) # Caso usuario no encontrado con la pk
