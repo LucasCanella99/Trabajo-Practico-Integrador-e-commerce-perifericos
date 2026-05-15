@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="./logo/logocompleto.png"> <!-- favicon/ icono de la pestaña -->
     <title>PERGAMING | Tu tienda de periféricos favorita</title>
+    <link rel="stylesheet" href="main.css">
     <!-- falta conectar el css y js -->
 </head>
 <body>
@@ -13,11 +14,11 @@
     <section id="nav">
         <nav>
             <ul>
-                <li><a href="#">Inicio</a></li>
-                <li><a href="#">Sobre nosotros</a></li>
-                <li><a href="#">Envio</a></li>
-                <li><a href="#">Productos</a></li>
-                <li><a href="#">Contacto</a></li>
+                <li><a href="#header">Inicio</a></li>
+                <li><a href="#nos">Sobre nosotros</a></li>
+                <li><a href="#envios">Envio</a></li>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
                 <li><a href="#">carrito</a></li>
             </ul>
         </nav>
@@ -34,11 +35,15 @@
 
     <!-- seccion nos-->
     <section id="nos">
+        <div class = "nosotros-card">
+            <div class="img-nos"> <img src="./imgs/nosotrosimg.png" alt="Sobre nosotros">
+            </div>
         <h2>¿Quiénes somos?</h2>
         <p>
         Somos una tienda especializada en periféricos para gaming, comprometidos con ofrecer productos de alta calidad que potencien la experiencia de cada jugador. Nos enfocamos en brindar una selección cuidadosamente elegida de teclados, mouse, auriculares y accesorios diseñados para maximizar el rendimiento, la comodidad y la durabilidad.
         Nuestro objetivo es acompañar tanto a jugadores casuales como competitivos, ofreciendo tecnología confiable, asesoramiento personalizado y atención dedicada en cada etapa de la compra. Creemos que cada detalle importa, por eso trabajamos constantemente para garantizar innovación, buenos precios y una experiencia de compra simple, segura y satisfactoria.
         </p>
+        </div>
     </section>
 
     <!-- seccion envios -->
@@ -68,7 +73,7 @@
     <input type="text" id="busqueda" placeholder="Buscar producto..." />
 
         <!-- Contenedor -->
-        <div id="lista-productos"><!-- aca el js hace la magia --> </div>
+        <div id="lista-productos"><!-- aca el js hace el renderizado de productos del json--> </div>
 
 </section>
     <!-- seccion contacto -->
