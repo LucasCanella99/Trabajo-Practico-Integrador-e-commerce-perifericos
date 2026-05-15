@@ -55,11 +55,22 @@
     </section>
 
     <!-- seccion productos -->
-    <section id="products">
-        <h2>Nuestro productos</h2>
-        <!-- js fetch, y js agregar al carrito como tambien el nuevo html -->
-    </section>
+    <section id="productos">
+    <h2>Productos</h2>
 
+    <!-- Filtros -->
+    <select id="filtro-precio">
+        <option value="todos">Todos</option>
+        <option value="bajo">Menor a $10.000</option>
+        <option value="alto">Mayor a $10.000</option>
+    </select>
+
+    <input type="text" id="busqueda" placeholder="Buscar producto..." />
+
+        <!-- Contenedor -->
+        <div id="lista-productos"><!-- aca el js hace la magia --> </div>
+
+</section>
     <!-- seccion contacto -->
     <section id="contacto">
         <h2>Contacto</h2>
