@@ -88,6 +88,7 @@ class Product(BaseModel):
     product_category = models.ForeignKey(ProductCategory, on_delete= models.CASCADE, verbose_name= 'Categoria del producto')
     measure_unit = models.ForeignKey(MeasureUnit, on_delete= models.CASCADE, verbose_name= 'Unidad de Medida')
     price = models.DecimalField('Precio de venta', max_digits=10, decimal_places=2, default=0)
+    stock = models.PositiveIntegerField('Stock disponible', default=0)
     historical = HistoricalRecords() #Tabla espejo, es el historial de cambios
 
     @property
