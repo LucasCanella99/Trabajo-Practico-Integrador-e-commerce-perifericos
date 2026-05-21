@@ -129,3 +129,11 @@ REST_FRAMEWORK = {
         'anon': '1/minute',
     }
 }
+
+import os
+
+# La URL con la que el navegador va a pedir las fotos de forma local
+MEDIA_URL = '/media/'
+
+# La carpeta física real  donde se van a crear 'products/' y 'comprobantes/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

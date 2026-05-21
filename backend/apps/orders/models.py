@@ -20,6 +20,8 @@ class Order(models.Model):
     # max_digits=10 y decimal_places=2 te permite guardar montos de hasta $99.999.999,99
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
+    comprobante_pago = models.ImageField('Comprobante de Pago', upload_to='comprobantes/', blank=True, null=True)
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
