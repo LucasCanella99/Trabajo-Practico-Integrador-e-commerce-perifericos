@@ -34,6 +34,7 @@ LOCAL_APPS =[
     'apps.products',
     'apps.carts',
     'apps.orders',
+    'apps.consulta',
 ]
 
 THIRD_APPS = [
@@ -113,3 +114,18 @@ AUTH_USER_MODEL = 'users.User'
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Django REST Framework Configuration
+REST_FRAMEWORK = {
+
+    
+    #ESCUDO CONTRA SPAM (Throttling) Por lo del contacto que va a ser publico
+    'DEFAULT_THROTTLE_CLASSES': [
+        # Rastrea la IP del usuario que no inició sesión
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        # Máximo 1 consulta por minuto por cada IP anónima
+        'anon': '1/minute',
+    }
+}
