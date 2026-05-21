@@ -18,9 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView, # Login, devuelve acceso y refrescado
+    TokenRefreshView, # Recibe refrescado y devuelve el nuevo acceso
+)
 
 urlpatterns = [
+    # Nativo
     path('admin/', admin.site.urls),
+    # Autenticación 
+    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Apps hechas
     path('usuario/', include('apps.users.api.urls')),
     path('products/', include('apps.products.api.urls')),
     path('carts/',include('apps.carts.api.urls')),

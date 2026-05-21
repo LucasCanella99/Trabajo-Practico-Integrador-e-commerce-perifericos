@@ -1,5 +1,5 @@
-
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -118,6 +118,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
 
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # Le decimos a DRF que busque el token JWT en el header Authorization
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
     
     #ESCUDO CONTRA SPAM (Throttling) Por lo del contacto que va a ser publico
     'DEFAULT_THROTTLE_CLASSES': [
@@ -128,6 +132,15 @@ REST_FRAMEWORK = {
         # Máximo 1 consulta por minuto por cada IP anónima
         'anon': '1/minute',
     }
+}
+
+SIMPLE_JWT = {
+    # El access token dura poco por seguridad
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    # El refresh token dura más, el usuario no tiene que loguearse tan seguido
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    # Cuando usás el refresh para renovar, te manda también un refresh nuevo
+    'ROTATE_REFRESH_TOKENS': True,
 }
 
 import os
