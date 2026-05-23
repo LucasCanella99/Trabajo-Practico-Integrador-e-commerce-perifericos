@@ -1,1 +1,0 @@
-// aca va la interactividad de la pagina, como el carrito, el fecth de los productos, filtros, etc.
