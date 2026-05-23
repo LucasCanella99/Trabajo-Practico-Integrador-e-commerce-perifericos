@@ -1,22 +1,20 @@
+import os
+import dj_database_url
 from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False # S-Cambio: una boludez, lo dejo en False por las dudas
+DEBUG = False
 
 ALLOWED_HOSTS = ['e-commerce-perifericos-backend.onrender.com']
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+# Configuración de Base de Datos para Producción (Supabase)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        # Levanta automáticamente las credenciales desde la URL que maneja Render interna o tu string
+        default=f"postgres://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASSWORD')}@{os.environ.get('DB_HOST')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}",
+        conn_max_age=600
+    )
 }
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
+# Dejamos que WhiteNoise maneje los estáticos en producción
 STATIC_URL = 'static/'
