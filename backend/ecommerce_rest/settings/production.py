@@ -7,14 +7,31 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['e-commerce-perifericos-backend.onrender.com']
 
-# Configuración de Base de Datos para Producción (Supabase)
+# 1. BASE DE DATOS (PostgreSQL de Supabase)
 DATABASES = {
     'default': dj_database_url.config(
-        # Levanta automáticamente las credenciales desde la URL que maneja Render interna o tu string
         default=f"postgres://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASSWORD')}@{os.environ.get('DB_HOST')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}",
         conn_max_age=600
     )
 }
 
-# Dejamos que WhiteNoise maneje los estáticos en producción
+# 2. ALMACENAMIENTO (Bucket de Supabase / S3)
+# Al usar el diccionario STORAGES heredamos 'staticfiles' de base.py (WhiteNoise)
+# y acá pisamos 'default' para que las imágenes vayan directo a tu bucket de Supabase.
+STORAGES["default"] = {
+    "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+}
+
+# Credenciales del Bucket mapeadas con las variables de entorno de Render
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL') # La URL de Supabase S3
+
+# Configuraciones extra opcionales para el comportamiento de los archivos
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_DEFAULT_ACL = None  # Supabase maneja los accesos con sus propias políticas de la App
+
 STATIC_URL = 'static/'
