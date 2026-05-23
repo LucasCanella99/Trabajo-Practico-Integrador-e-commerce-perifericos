@@ -1,9 +1,13 @@
 from pathlib import Path
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# Carga limpia del archivo .env
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -76,6 +80,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce_rest.wsgi.application'
 
+# específica e independiente dentro de local.py y production.py
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -142,8 +148,6 @@ SIMPLE_JWT = {
     # Cuando usás el refresh para renovar, te manda también un refresh nuevo
     'ROTATE_REFRESH_TOKENS': True,
 }
-
-import os
 
 # La URL con la que el navegador va a pedir las fotos de forma local
 MEDIA_URL = '/media/'

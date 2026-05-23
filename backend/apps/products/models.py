@@ -1,6 +1,7 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
 from apps.base.models import BaseModel
+from apps.base.utils import optimizar_imagen
 
 # Create your models here
 
@@ -99,7 +100,6 @@ class Product(BaseModel):
     def _history_user(self, value):
         self.changed_by = value
     
-    
     class Meta:
 
         verbose_name = 'Producto'
@@ -107,3 +107,16 @@ class Product(BaseModel):
     
     def __str__(self):
         return self.name
+
+    # Inyectamos el método save personalizado para interceptar y optimizar la imagen antes de subirla
+    def save(self, *args, **kwargs):
+        if self.product_image:
+            # Nos aseguramos de que sea un archivo nuevo en memoria (un upload real)
+            # y no el string de una URL que ya existe en la base de datos
+            if hasattr(self.product_image, 'file'):
+                imagen_comprimida = optimizar_imagen(self.product_image)
+                if imagen_comprimida:
+                    self.product_image = imagen_comprimida
+                    
+        # Ejecutamos el guardado original que impacta en la DB y en Supabase Storage
+        super().save(*args, **kwargs)

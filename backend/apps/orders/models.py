@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.products.models import Product
+from apps.base.utils import optimizar_imagen
 
 User = get_user_model()
 
@@ -33,6 +34,18 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Orden {self.id} - {self.user.username} ({self.get_status_display()})"
+
+    # Inyectamos el método save para optimizar el comprobante antes de mandarlo a Supabase
+    def save(self, *args, **kwargs):
+        if self.comprobante_pago:
+            # Validamos que sea un archivo real subiéndose en el momento
+            if hasattr(self.comprobante_pago, 'file'):
+                imagen_comprimida = optimizar_imagen(self.comprobante_pago)
+                if imagen_comprimida:
+                    self.comprobante_pago = imagen_comprimida
+                    
+        # Guardado final en la base de datos y subida al Storage
+        super().save(*args, **kwargs)
 
 
 class OrderItem(models.Model):
