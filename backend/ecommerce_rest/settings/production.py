@@ -3,7 +3,7 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False # S-Cambio: una boludez, lo dejo en False por las dudas
 
-ALLOWED_HOSTS = ['https://e-commerce-perifericos-backend.onrender.com/']
+ALLOWED_HOSTS = ['e-commerce-perifericos-backend.onrender.com']
 
 
 # Database
