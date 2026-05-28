@@ -38,6 +38,8 @@ urlpatterns = [
     path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')), #REcuperación de contraseña.
     # Endpoint de solicitud de cambio POST /password_reset/---> Envia el mail
     # Endpont de confirmacion de cambio POST /password_reset/confirm/ ----> Se cambia la contraseña en la DB
+    path('assets/', include('apps.assets.api.urls')),
+    # Endpoint para que carguen imagenes como logo y esas cosas en el front 
 ]
 
 
