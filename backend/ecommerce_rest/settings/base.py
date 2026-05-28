@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -46,6 +47,7 @@ LOCAL_APPS =[
 THIRD_APPS = [
     'rest_framework',
     'simple_history',
+    'axes',
 ]
 
 
@@ -62,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
+    'axes.middleware.AxesMiddleware',  
 ]
 
 ROOT_URLCONF = 'ecommerce_rest.urls'
@@ -169,3 +172,15 @@ MEDIA_URL = '/media/'
 
 # La carpeta física real  donde se van a crear 'products/' y 'comprobantes/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # ← primero Axes intercepta
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
+AXES_FAILURE_LIMIT = 3                                    # intentos antes de bloquear
+AXES_COOLOFF_TIME = timedelta(minutes=15)                 # tiempo de bloqueo
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]    # bloquea la combinación usuario+IP
+AXES_RESET_ON_SUCCESS = True                              # si entra bien, resetea el contador
+AXES_LOCKOUT_CALLABLE = 'apps.users.utils.lockout_response'
