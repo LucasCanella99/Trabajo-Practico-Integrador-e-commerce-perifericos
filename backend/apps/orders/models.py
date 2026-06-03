@@ -37,14 +37,23 @@ class Order(models.Model):
 
     # Inyectamos el método save para optimizar el comprobante antes de mandarlo a Supabase
     def save(self, *args, **kwargs):
+        # 1. Lógica para el comprobante 
         if self.comprobante_pago:
-            # Validamos que sea un archivo real subiéndose en el momento
             if hasattr(self.comprobante_pago, 'file'):
                 imagen_comprimida = optimizar_imagen(self.comprobante_pago)
                 if imagen_comprimida:
                     self.comprobante_pago = imagen_comprimida
+        
+        # 2. Lógica para reponer stock al CANCELAR
+        if self.pk:  # Si la orden ya existe en la DB
+            orden_anterior = Order.objects.get(pk=self.pk)
+            # Si el estado cambió a CANCELADO y antes NO lo estaba
+            if self.status == 'CANCELADO' and orden_anterior.status != 'CANCELADO':
+                for item in self.items.all():
+                    item.product.stock += item.quantity
+                    item.product.save()
                     
-        # Guardado final en la base de datos y subida al Storage
+        # 3. Guardado final
         super().save(*args, **kwargs)
 
 
