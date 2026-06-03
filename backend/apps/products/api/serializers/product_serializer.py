@@ -10,13 +10,21 @@ class ProductSerializer(serializers.ModelSerializer):
         exclude= ('state','created_date','deleted_date','modified_date',)        
 
     def to_representation(self, instance):
+        # Esta es la base pública del bucket en Supabase
+        base_url = "https://payvlfqrsbrihdsashzt.supabase.co/storage/v1/object/public/media/"
+        
+        # Obtenemos la ruta relativa del archivo guardado en el modelo
+        # Si instance.product_image es 'products/prueba.webp', esto devuelve el path completo
+        image_path = instance.product_image.name if instance.product_image else ''
+        
         return {
             'id': instance.id,
             'name': instance.name,
             'description' : instance.description,
             'price': instance.price,
-            'product_image': instance.product_image.url if instance.product_image else '', #SI O SI debe acceder al la url de la image sino el json no lo traduce y hay un error de unicode
-            'measure_unit': instance.measure_unit.description,  #accedo a las instancias de unidad de medida y la categoria
+            # Construimos la URL pública concatenando
+            'product_image': f"{base_url}{image_path}" if image_path else '',
+            'measure_unit': instance.measure_unit.description,
             'product_category': instance.product_category.description,
-
+            'stock': instance.stock, 
         }
