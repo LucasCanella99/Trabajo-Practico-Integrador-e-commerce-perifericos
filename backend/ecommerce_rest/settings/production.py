@@ -16,10 +16,13 @@ DATABASES = {
 }
 
 # 2. ALMACENAMIENTO (Bucket de Supabase / S3)
-# Al usar el diccionario STORAGES heredamos 'staticfiles' de base.py (WhiteNoise)
-# y acá pisamos 'default' para que las imágenes vayan directo a tu bucket de Supabase.
-STORAGES["default"] = {
-    "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
 }
 
 # Credenciales del Bucket mapeadas con las variables de entorno de Render
@@ -27,6 +30,8 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL') # La URL de Supabase S3
+AWS_DEFAULT_ACL = None 
+AWS_QUERYSTRING_AUTH = False
 
 # Configuraciones extra opcionales para el comportamiento de los archivos
 AWS_S3_OBJECT_PARAMETERS = {

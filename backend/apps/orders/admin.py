@@ -1,29 +1,23 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from apps.orders.models import Order, OrderItem
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
-    extra = 0
-    # Bloqueamos los campos para que no se altere el historial de la factura por error
     readonly_fields = ['product', 'quantity', 'price']
     can_delete = False
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    # Columnas que se van a ver en la tabla general de órdenes
-    list_display = ['id', 'user', 'created_at', 'total', 'status']
-    
-    # Filtros rápidos en el lateral derecho
-    list_filter = ['status', 'created_at']
-    
-    # Buscador por ID de orden o por el username del cliente
-    search_fields = ['id', 'user__username']
-    
-    # Protegemos la cabecera para que sea de solo lectura
-    readonly_fields = ['user', 'created_at', 'total']
-    
-    # Metemos los renglones (OrderItem) incrustados abajo de la cabecera
+    list_display = ['id', 'user', 'created_at', 'total', 'status', 'ver_comprobante']
+    readonly_fields = ['user', 'created_at', 'total', 'ver_comprobante'] # Agregamos ver_comprobante acá
     inlines = [OrderItemInline]
-
-    # Permite cambiar el estado con el desplegable directo desde la lista general
     list_editable = ['status']
+
+    # Esta función crea la vista previa segura
+    def ver_comprobante(self, obj):
+        if obj.comprobante_pago:
+            return format_html('<a href="{}" target="_blank"><img src="{}" style="width:100px;" /></a>', 
+                               obj.comprobante_pago.url, obj.comprobante_pago.url)
+        return "Sin comprobante"
+    ver_comprobante.short_description = "Comprobante"
