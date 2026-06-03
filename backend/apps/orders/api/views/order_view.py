@@ -14,24 +14,23 @@ class OrderViewSet(viewsets.GenericViewSet):
     serializer_class = OrderSerializer
     parser_classes = [JSONParser]
 
-    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser, JSONParser])
+    @action(detail=False, methods=['post'])
     def checkout(self, request):
         user = request.user
         
-        # Intentar obtener el carrito activo
-        try:
-            cart = Cart.objects.get(user=user, state=True)
-        except Cart.DoesNotExist:
-            return Response(
-                {'error': 'No tenés un carrito activo. Agregá productos primero.'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+        # Obtener o crear carrito activo (ESTA ES LA LÍNEA CLAVE)
+        cart, created = Cart.objects.get_or_create(user=user, defaults={'state': True})
+        
+        # Si el carrito existe pero state=False, lo activamos
+        if not created and not cart.state:
+            cart.state = True
+            cart.save()
+        
         cart_items = cart.items.filter(state=True)
         
         if not cart_items.exists():
             return Response(
-                {'error': 'El carrito está vacío'}, 
+                {'error': 'El carrito está vacío. Agregá productos antes de comprar.'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -39,14 +38,14 @@ class OrderViewSet(viewsets.GenericViewSet):
         for item in cart_items:
             if item.product.stock < item.quantity:
                 return Response(
-                    {'error': f'Stock insuficiente para {item.product.name}'}, 
+                    {'error': f'Stock insuficiente para {item.product.name}. Disponible: {item.product.stock}'}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
         # Crear orden
         with transaction.atomic():
             order = Order.objects.create(user=user, total=0)
-            total = 0
+            total_acumulado = 0
             
             for item in cart_items:
                 product = item.product
@@ -59,18 +58,13 @@ class OrderViewSet(viewsets.GenericViewSet):
                     quantity=item.quantity, 
                     price=product.price
                 )
-                total += product.price * item.quantity
+                total_acumulado += product.price * item.quantity
             
-            order.total = total
+            order.total = total_acumulado
             order.save()
             
-            # Marcar items del carrito como inactivos
+            # Vaciar carrito (soft delete)
             cart_items.update(state=False)
-            
-            # Si viene un comprobante en la request, guardarlo
-            if 'comprobante_pago' in request.FILES:
-                order.comprobante_pago = request.FILES['comprobante_pago']
-                order.save()
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -94,4 +88,4 @@ class OrderViewSet(viewsets.GenericViewSet):
         order.comprobante_pago = request.FILES['comprobante_pago']
         order.save()
         
-        return Response({'status': 'ok', 'message': 'Comprobante subido'})
+        return Response({'status': 'ok', 'message': 'Comprobante subido correctamente'})
