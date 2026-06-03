@@ -101,17 +101,12 @@ class OrderViewSet(viewsets.GenericViewSet):
     def subir_comprobante(self, request, pk=None):
         order = self.get_object()
         serializer = OrderSerializer(order, data=request.data, partial=True)
-        
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
-            
-        try:
-            serializer.save()
-            return Response({'status': 'ok'}, status=200)
-        except Exception as e:
-            # ESTO TE VA A DECIR LA VERDAD DEL ERROR
-            import traceback
-            error_msg = str(e)
-            full_trace = traceback.format_exc()
-            print(f"ERROR DE SUBIDA: {full_trace}") # Esto sale en los logs de Render
-            return Response({'error': error_msg, 'detalle': full_trace}, status=500)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                return Response({'status': 'ok'})
+            except Exception as e:
+                # Esto imprimirá el error real en los logs de Render
+                print(f"ERROR AL GUARDAR EN SUPABASE: {str(e)}") 
+                return Response({'error': str(e)}, status=500)
+        return Response(serializer.errors, status=400)
