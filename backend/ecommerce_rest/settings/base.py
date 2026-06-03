@@ -195,7 +195,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://0.0.0.0:8000",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -205,3 +204,6 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo: permite peticiones de cualquier origen
+CORS_ALLOW_CREDENTIALS = True
