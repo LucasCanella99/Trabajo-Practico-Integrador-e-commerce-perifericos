@@ -5,71 +5,72 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db import transaction
 
-from apps.carts.models import Cart, CartItem
+from apps.carts.models import Cart
 from apps.orders.models import Order, OrderItem
 from apps.orders.api.serializers.order_serializer import OrderSerializer
 
 class OrderViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
-    
-    # Definimos los parsers por defecto para los métodos estándar
     parser_classes = [JSONParser]
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser, JSONParser])
     def checkout(self, request):
         user = request.user
         
-        # Obtener o crear un carrito activo para el usuario
-        # Si no existe, lo creamos automáticamente
-        cart, created = Cart.objects.get_or_create(
-            user=user, 
-            state=True,
-            defaults={'state': True}  # Valores por defecto si se crea
-        )
-        
-        # Si se creó ahora, no tiene items, así que verificamos
+        # Intentar obtener el carrito activo
+        try:
+            cart = Cart.objects.get(user=user, state=True)
+        except Cart.DoesNotExist:
+            return Response(
+                {'error': 'No tenés un carrito activo. Agregá productos primero.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         cart_items = cart.items.filter(state=True)
         
         if not cart_items.exists():
             return Response(
-                {'error': 'El carrito está vacío. Agregá productos antes de comprar.'}, 
+                {'error': 'El carrito está vacío'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Verificar stock de cada item
+        # Verificar stock
         for item in cart_items:
             if item.product.stock < item.quantity:
                 return Response(
-                    {'error': f'Stock insuficiente para {item.product.name}. Disponible: {item.product.stock}'}, 
+                    {'error': f'Stock insuficiente para {item.product.name}'}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        # Crear la orden con transacción atómica
+        # Crear orden
         with transaction.atomic():
-            order = Order.objects.create(user=user, total=0.00)
-            total_acumulado = 0
+            order = Order.objects.create(user=user, total=0)
+            total = 0
             
             for item in cart_items:
                 product = item.product
-                # Descontar stock
                 product.stock -= item.quantity
                 product.save()
                 
-                # Crear el item de la orden
                 OrderItem.objects.create(
                     order=order, 
                     product=product, 
                     quantity=item.quantity, 
                     price=product.price
                 )
-                total_acumulado += product.price * item.quantity
+                total += product.price * item.quantity
             
-            order.total = total_acumulado
+            order.total = total
             order.save()
             
-            # Marcar los items del carrito como inactivos (soft delete)
-            cart.items.filter(state=True).update(state=False)
+            # Marcar items del carrito como inactivos
+            cart_items.update(state=False)
+            
+            # Si viene un comprobante en la request, guardarlo
+            if 'comprobante_pago' in request.FILES:
+                order.comprobante_pago = request.FILES['comprobante_pago']
+                order.save()
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -80,19 +81,17 @@ class OrderViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(orders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    # Sobrescribimos parser_classes SOLO para este método, permitiendo archivos
     @action(detail=True, methods=['patch'], parser_classes=[MultiPartParser, FormParser])
     def subir_comprobante(self, request, pk=None):
         try:
-            order = self.get_object()
-        except Exception as e:
-            return Response({'error': f'Orden no encontrada: {str(e)}'}, status=404)
-            
-        serializer = OrderSerializer(order, data=request.data, partial=True)
-        if serializer.is_valid():
-            try:
-                serializer.save()
-                return Response({'status': 'ok', 'message': 'Comprobante subido correctamente'})
-            except Exception as e:
-                return Response({'error': str(e)}, status=500)
-        return Response(serializer.errors, status=400)
+            order = Order.objects.get(id=pk, user=request.user)
+        except Order.DoesNotExist:
+            return Response({'error': 'Orden no encontrada'}, status=404)
+        
+        if 'comprobante_pago' not in request.FILES:
+            return Response({'error': 'No se envió ningún archivo'}, status=400)
+        
+        order.comprobante_pago = request.FILES['comprobante_pago']
+        order.save()
+        
+        return Response({'status': 'ok', 'message': 'Comprobante subido'})
