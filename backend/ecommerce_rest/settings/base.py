@@ -157,8 +157,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.AnonRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        # Máximo 1 consulta por minuto por cada IP anónima
-        'anon': '1/minute',
+        # Máximo 100 consulta por minuto por cada IP anónima
+        'anon': '100/minute',
     }
 }
 
