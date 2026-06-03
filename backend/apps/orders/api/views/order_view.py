@@ -96,3 +96,13 @@ class OrderViewSet(viewsets.GenericViewSet):
         orders = Order.objects.filter(user=request.user)
         serializer = self.get_serializer(orders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['patch'], parser_classes=[MultiPartParser, FormParser])
+    def subir_comprobante(self, request, pk=None):
+        order = self.get_object()
+        # Esto usa el serializer que ya tiene definido 'comprobante_pago' en fields
+        serializer = OrderSerializer(order, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save() # Aquí se dispara la magia de S3 (Supabase)
+            return Response({'status': 'Comprobante subido'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

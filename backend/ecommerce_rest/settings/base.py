@@ -133,13 +133,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 STORAGES = {
-       "default": {
-           "BACKEND": "django.core.files.storage.FileSystemStorage",
-       },
-       "staticfiles": {
-           "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-       },
-   }
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
