@@ -50,6 +50,7 @@ THIRD_APPS = [
     'simple_history',
     'django_rest_passwordreset',
     'axes',
+    'corsheaders',
 ]
 
 
@@ -58,6 +59,7 @@ INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -186,3 +188,9 @@ AXES_COOLOFF_TIME = timedelta(minutes=15)                 # tiempo de bloqueo
 AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]    # bloquea la combinación usuario+IP
 AXES_RESET_ON_SUCCESS = True                              # si entra bien, resetea el contador
 AXES_LOCKOUT_CALLABLE = 'apps.users.utils.lockout_response'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://0.0.0.0:8000",
+]
