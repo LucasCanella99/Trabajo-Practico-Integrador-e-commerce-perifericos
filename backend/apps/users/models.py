@@ -58,3 +58,20 @@ class SecurityQuestion(models.Model):
 
     def check_answer(self, raw_answer: str) -> bool:
         return self.answer == self.normalize(raw_answer)
+
+class SecurityQuestion(models.Model):
+    QUESTION_CHOICES = [
+        ('mascota', '¿Nombre de tu primera mascota?'),
+        ('ciudad', '¿Ciudad donde naciste?'),
+        ('madre', '¿Nombre de tu madre?'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='security_questions')
+    question = models.CharField(max_length=50, choices=QUESTION_CHOICES)
+    answer = models.CharField(max_length=255)
+
+    @staticmethod
+    def normalize(raw_answer):
+        return raw_answer.strip().lower()
+
+    def check_answer(self, raw_answer):
+        return self.normalize(raw_answer) == self.answer
