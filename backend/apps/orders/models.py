@@ -16,7 +16,6 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     
-    # Datos de envío capturados en el formulario
     shipping_name = models.CharField('Nombre', max_length=100, default='')
     shipping_last_name = models.CharField('Apellido', max_length=100, default='')
     shipping_email = models.EmailField('Email de contacto', default='')
@@ -25,7 +24,6 @@ class Order(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDIENTE')
     
-    # Checkbox de transferencia
     transfer_confirmed = models.BooleanField('El usuario marcó que ya transfirió', default=False)
     cancel_reason = models.TextField('Motivo de cancelación', blank=True, null=True)
     
@@ -39,7 +37,8 @@ class Order(models.Model):
             if self.status in ['CANCELADO', 'RECHAZADO'] and anterior.status not in ['CANCELADO', 'RECHAZADO']:
                 for item in self.items.all():
                     item.product.stock += item.quantity
-                    item.product.save()
+                    # FIX: Le decimos a Django que solo valide y guarde la columna 'stock'
+                    item.product.save(update_fields=['stock'])
         super().save(*args, **kwargs)
 
 class OrderItem(models.Model):
