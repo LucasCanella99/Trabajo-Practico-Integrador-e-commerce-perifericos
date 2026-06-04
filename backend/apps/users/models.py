@@ -45,29 +45,17 @@ SECURITY_QUESTIONS = [
 ]
 
 class SecurityQuestion(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='security_questions')
-    question = models.CharField('Pregunta', max_length=10, choices=SECURITY_QUESTIONS)
-    answer = models.CharField('Respuesta (normalizada)', max_length=255)
-
-    class Meta:
-        unique_together = [('user', 'question')]
-
-    @staticmethod
-    def normalize(text: str) -> str:
-        return text.lower().replace(' ', '').strip()
-
-    def check_answer(self, raw_answer: str) -> bool:
-        return self.answer == self.normalize(raw_answer)
-
-class SecurityQuestion(models.Model):
     QUESTION_CHOICES = [
         ('mascota', '¿Nombre de tu primera mascota?'),
-        ('ciudad', '¿Ciudad donde naciste?'),
-        ('madre', '¿Nombre de tu madre?'),
+        ('ciudad',  '¿Ciudad donde naciste?'),
+        ('madre',   '¿Nombre de tu madre?'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='security_questions')
+    user     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='security_questions')
     question = models.CharField(max_length=50, choices=QUESTION_CHOICES)
-    answer = models.CharField(max_length=255)
+    answer   = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = [('user', 'question')]  # ← Recuperar esta restricción
 
     @staticmethod
     def normalize(raw_answer):
