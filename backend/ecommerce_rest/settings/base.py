@@ -48,7 +48,7 @@ LOCAL_APPS =[
 THIRD_APPS = [
     'rest_framework',
     'simple_history',
-    'django_rest_passwordreset',
+    #'django_rest_passwordreset',
     'axes',
     'corsheaders',
 ]

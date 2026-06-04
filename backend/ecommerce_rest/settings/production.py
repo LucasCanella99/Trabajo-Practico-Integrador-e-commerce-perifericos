@@ -41,16 +41,11 @@ AWS_DEFAULT_ACL = None  # Supabase maneja los accesos con sus propias políticas
 
 STATIC_URL = 'static/'
 
-#para los recuperar contraseña y verificar mails
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.resend.com'
-EMAIL_HOST_USER = 'resend' 
-EMAIL_HOST_PASSWORD = os.environ.get('RESEND_API_KEY') 
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
 
-# Esta es la URL que la librería usa para construir el link que llega al mail.
-# Cambiar por URL real de producción cuando lo tengamos .
-# PASSWORD_RESET_FRONTEND_URL = "https://dominio-real.com/reset-confirm/"
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    }
+}

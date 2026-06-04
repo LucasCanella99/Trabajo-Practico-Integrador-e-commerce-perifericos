@@ -2,36 +2,27 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from simple_history.models import HistoricalRecords
 
-
 class UserManager(BaseUserManager):
-    def _create_user(self, username, email, name,last_name, password, is_staff, is_superuser, **extra_fields):
-        user = self.model(
-            username = username,
-            email = email,
-            name = name,
-            last_name = last_name,
-            is_staff = is_staff,
-            is_superuser = is_superuser,
-            **extra_fields
-        )
+    def _create_user(self, username, email, name, last_name, password, is_staff, is_superuser, **extra_fields):
+        user = self.model(username=username, email=email, name=name, last_name=last_name, is_staff=is_staff, is_superuser=is_superuser, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         return user
 
-    def create_user(self, username, email, name,last_name, password=None, **extra_fields):
-        return self._create_user(username, email, name,last_name, password, False, False, **extra_fields)
+    def create_user(self, username, email, name, last_name, password=None, **extra_fields):
+        return self._create_user(username, email, name, last_name, password, False, False, **extra_fields)
 
-    def create_superuser(self, username, email, name,last_name, password=None, **extra_fields):
-        return self._create_user(username, email, name,last_name, password, True, True, **extra_fields)
+    def create_superuser(self, username, email, name, last_name, password=None, **extra_fields):
+        return self._create_user(username, email, name, last_name, password, True, True, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length = 255, unique = True)
-    email = models.EmailField('Correo Electrónico',max_length = 255, unique = True,)
-    name = models.CharField('Nombres', max_length = 255, blank = True, null = True)
-    last_name = models.CharField('Apellidos', max_length = 255, blank = True, null = True)
-    image = models.ImageField('Imagen de perfil', upload_to='perfil/', max_length=255, null=True, blank = True)
-    is_active = models.BooleanField(default = True)
-    is_staff = models.BooleanField(default = False)
+    username = models.CharField(max_length=255, unique=True)
+    email = models.EmailField('Correo Electrónico', max_length=255, unique=True)
+    name = models.CharField('Nombres', max_length=255, blank=True, null=True)
+    last_name = models.CharField('Apellidos', max_length=255, blank=True, null=True)
+    image = models.ImageField('Imagen de perfil', upload_to='perfil/', max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     historical = HistoricalRecords()
     objects = UserManager()
 
@@ -40,8 +31,30 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'Usuarios'
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email','name','last_name']
+    REQUIRED_FIELDS = ['email', 'name', 'last_name']
 
     def __str__(self):
         return f'{self.name} {self.last_name}'
-    
+
+# --- NUEVO: PREGUNTAS DE SEGURIDAD ---
+SECURITY_QUESTIONS = [
+    ('q1', '¿Cuál es el nombre de tu primera mascota?'),
+    ('q2', '¿En qué ciudad naciste?'),
+    ('q3', '¿Cuál es el nombre de tu madre?'),
+    ('q4', '¿Cuál es tu color favorito?'),
+]
+
+class SecurityQuestion(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='security_questions')
+    question = models.CharField('Pregunta', max_length=10, choices=SECURITY_QUESTIONS)
+    answer = models.CharField('Respuesta (normalizada)', max_length=255)
+
+    class Meta:
+        unique_together = [('user', 'question')]
+
+    @staticmethod
+    def normalize(text: str) -> str:
+        return text.lower().replace(' ', '').strip()
+
+    def check_answer(self, raw_answer: str) -> bool:
+        return self.answer == self.normalize(raw_answer)

@@ -1,69 +1,49 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.products.models import Product
-from apps.base.utils import optimizar_imagen
 
 User = get_user_model()
 
 class Order(models.Model):
-    # Estados personalizados para simular el ciclo de vida real de la venta
     STATUS_CHOICES = [
-        ('REVISION', 'Pendiente de aprobación / En revisión'),
-        ('PAGADO', 'Pago confirmado / Pendiente de envío'),
-        ('VIAJE', 'En viaje / Enviado'),
-        ('ENTREGADO', 'Entregado'),
-        ('CANCELADO', 'Cancelado'),
+        ('PENDIENTE',  'Pendiente de pago'),
+        ('PAGADO',     'Pago confirmado'),
+        ('VIAJE',      'En camino'),
+        ('ENTREGADO',  'Entregado'),
+        ('CANCELADO',  'Cancelado'),
+        ('RECHAZADO',  'Rechazado'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
-    created_at = models.DateTimeField(auto_now_add=True)
     
-    # max_digits=10 y decimal_places=2 te permite guardar montos de hasta $99.999.999,99
+    # Datos de envío capturados en el formulario
+    shipping_name = models.CharField('Nombre', max_length=100, default='')
+    shipping_last_name = models.CharField('Apellido', max_length=100, default='')
+    shipping_email = models.EmailField('Email de contacto', default='')
+    shipping_address = models.CharField('Dirección de entrega', max_length=255, default='')
+    
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDIENTE')
     
-    comprobante_pago = models.ImageField('Comprobante de Pago', upload_to='comprobantes/', blank=True, null=True)
+    # Checkbox de transferencia
+    transfer_confirmed = models.BooleanField('El usuario marcó que ya transfirió', default=False)
+    cancel_reason = models.TextField('Motivo de cancelación', blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='REVISION'  # Por defecto el usuario ve en revision el estado de la compra
-    )
-
-    class Meta:
-        ordering = ['-created_at']  # Las órdenes más nuevas aparecen primero
-
-    def __str__(self):
-        return f"Orden {self.id} - {self.user.username} ({self.get_status_display()})"
-
-    # Inyectamos el método save para optimizar el comprobante antes de mandarlo a Supabase
     def save(self, *args, **kwargs):
-        # 1. Lógica para el comprobante 
-        if self.comprobante_pago:
-            if hasattr(self.comprobante_pago, 'file'):
-                imagen_comprimida = optimizar_imagen(self.comprobante_pago)
-                if imagen_comprimida:
-                    self.comprobante_pago = imagen_comprimida
-        
-        # 2. Lógica para reponer stock al CANCELAR
-        if self.pk:  # Si la orden ya existe en la DB
-            orden_anterior = Order.objects.get(pk=self.pk)
-            # Si el estado cambió a CANCELADO y antes NO lo estaba
-            if self.status == 'CANCELADO' and orden_anterior.status != 'CANCELADO':
+        # Lógica de rollback de stock si se cancela o rechaza
+        if self.pk:
+            anterior = Order.objects.get(pk=self.pk)
+            if self.status in ['CANCELADO', 'RECHAZADO'] and anterior.status not in ['CANCELADO', 'RECHAZADO']:
                 for item in self.items.all():
                     item.product.stock += item.quantity
                     item.product.save()
-                    
-        # 3. Guardado final
         super().save(*args, **kwargs)
-
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='order_items') # Evita que si se elimina el producto mas adelante, no se borre la orden que tenia ese producto
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
-    
-    # Acá se congela el precio del producto en el segundo exacto de la compra
     price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.quantity} x {self.product.name} (Orden {self.order.id})"
