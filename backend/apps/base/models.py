@@ -4,10 +4,10 @@ from django.db import models
 
 class BaseModel(models.Model):
     id           = models.AutoField(primary_key= True)
-    state        = models.BooleanField(default=True)
-    created_date = models.DateField(auto_now_add=True)
-    modified_date = models.DateField(auto_now=True)
-    deleted_date  = models.DateField(null=True, blank=True)  # ← Sin auto_now
+    state        = models.BooleanField('Estado', default=True)
+    created_date = models.DateField('Fecha de creación', auto_now=False, auto_now_add=True)
+    modified_date = models.DateField('Fecha de modificación', auto_now=True, auto_now_add=False)
+    deleted_date  = models.DateField('Fecha de eliminación', null=True, blank=True)  # ← Sin auto_now
 
     class Meta:
         abstract = True
