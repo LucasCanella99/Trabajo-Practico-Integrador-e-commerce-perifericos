@@ -74,8 +74,7 @@ class CartViewSet(viewsets.GenericViewSet):
             # Buscamos el ítem que quieren dar de baja
             cart_item = CartItem.objects.get(cart=cart, product_id=product_id, state=True)
             # En vez de destruirlo físicamente, aplicamos Soft Delete cambiando el estado
-            cart_item.state = False
-            cart_item.save()
+            cart_item.delete_logical()
             
             serializer = CartSerializer(cart)
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -26,7 +26,6 @@ class ProductViewSet(viewsets.ModelViewSet):
     def destroy(self, request, pk=None):
         product = self.get_queryset().filter(id=pk).first()
         if product:
-            product.state = False
-            product.save()
+            product.delete_logical()
             return Response({'message': 'Producto eliminado correctamente'}, status=status.HTTP_200_OK)
         return Response({'error': 'No existe el producto'}, status=status.HTTP_400_BAD_REQUEST)
