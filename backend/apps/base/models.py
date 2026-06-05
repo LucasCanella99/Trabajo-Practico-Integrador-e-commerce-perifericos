@@ -3,10 +3,16 @@ from django.db import models
 # Create your models here.
 
 class BaseModel(models.Model):
+    id           = models.AutoField(primary_key= True)
     state        = models.BooleanField(default=True)
     created_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
     deleted_date  = models.DateField(null=True, blank=True)  # ← Sin auto_now
+
+    class Meta:
+        abstract = True
+        verbose_name = 'Modelo Base'
+        verbose_name_plural = 'Modelos Base'
 
     def delete_logical(self):
         """Método explícito para hacer el soft delete correctamente"""
