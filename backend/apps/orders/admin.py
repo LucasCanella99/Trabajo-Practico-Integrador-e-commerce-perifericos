@@ -10,16 +10,16 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display  = ['id', 'user', 'shipping_name', 'shipping_last_name', 'total', 'status', 'transfer_confirmed', 'created_at']
-    list_filter   = ['status', 'transfer_confirmed']
+    list_display  = ['id', 'user', 'delivery_method', 'shipping_name', 'shipping_last_name', 'total', 'status', 'transfer_confirmed', 'created_at']
+    list_filter   = ['status', 'delivery_method', 'transfer_confirmed']
     search_fields = ['user__username', 'user__email', 'shipping_email', 'shipping_name']
     list_editable = ['status']
-    readonly_fields = ['user', 'created_at', 'updated_at', 'total', 'shipping_name', 'shipping_last_name', 'shipping_email', 'shipping_address', 'cancel_reason']
+    readonly_fields = ['user', 'created_at', 'updated_at', 'total', 'delivery_method', 'shipping_name', 'shipping_last_name', 'shipping_email', 'shipping_address', 'cancel_reason']
     inlines = [OrderItemInline]
 
     fieldsets = [
-        ('Datos del pedido', {'fields': ['user', 'created_at', 'updated_at', 'total', 'status']}),
-        ('Datos de envío', {'fields': ['shipping_name', 'shipping_last_name', 'shipping_email', 'shipping_address']}),
+        ('Datos del pedido', {'fields': ['user', 'created_at', 'updated_at', 'total', 'status', 'delivery_method']}),
+        ('Datos de envío/retiro', {'fields': ['shipping_name', 'shipping_last_name', 'shipping_email', 'shipping_address']}),
         ('Pago y cancelación', {'fields': ['transfer_confirmed', 'cancel_reason']}),
     ]
 

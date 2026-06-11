@@ -14,12 +14,19 @@ class Order(models.Model):
         ('RECHAZADO',  'Rechazado'),
     ]
 
+    DELIVERY_CHOICES = [
+        ('ENVIO',  'Envío a domicilio'),
+        ('RETIRO', 'Retiro en tienda'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    
+    delivery_method = models.CharField('Método de entrega', max_length=20, choices=DELIVERY_CHOICES, default='ENVIO')
     
     shipping_name = models.CharField('Nombre', max_length=100, default='')
     shipping_last_name = models.CharField('Apellido', max_length=100, default='')
     shipping_email = models.EmailField('Email de contacto', default='')
-    shipping_address = models.CharField('Dirección de entrega', max_length=255, default='')
+    shipping_address = models.CharField('Dirección de entrega', max_length=255, default='', blank=True)
     
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDIENTE')
@@ -31,13 +38,11 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Lógica de rollback de stock si se cancela o rechaza
         if self.pk:
             anterior = Order.objects.get(pk=self.pk)
             if self.status in ['CANCELADO', 'RECHAZADO'] and anterior.status not in ['CANCELADO', 'RECHAZADO']:
                 for item in self.items.all():
                     item.product.stock += item.quantity
-                    # FIX: Le decimos a Django que solo valide y guarde la columna 'stock'
                     item.product.save(update_fields=['stock'])
         super().save(*args, **kwargs)
 

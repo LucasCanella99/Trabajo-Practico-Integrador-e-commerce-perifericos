@@ -21,10 +21,16 @@ class OrderViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def checkout(self, request):
         user = request.user
-        required = ['shipping_name', 'shipping_last_name', 'shipping_email', 'shipping_address']
+        delivery_method = request.data.get('delivery_method', 'ENVIO').upper()
+        
+        # Validamos qué datos exigir según el método elegido
+        required = ['shipping_name', 'shipping_last_name', 'shipping_email']
+        if delivery_method == 'ENVIO':
+            required.append('shipping_address')
+            
         missing  = [f for f in required if not request.data.get(f, '').strip()]
         if missing:
-            return Response({'error': f'Faltan datos de envío: {", ".join(missing)}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f'Faltan datos requeridos: {", ".join(missing)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             cart = Cart.objects.get(user=user, state=True)
@@ -43,10 +49,12 @@ class OrderViewSet(viewsets.GenericViewSet):
             order = Order.objects.create(
                 user=user,
                 total=0,
+                delivery_method    = delivery_method,
                 shipping_name      = request.data['shipping_name'].strip(),
                 shipping_last_name = request.data['shipping_last_name'].strip(),
                 shipping_email     = request.data['shipping_email'].strip(),
-                shipping_address   = request.data['shipping_address'].strip(),
+                # Usamos .get con string vacío por si es retiro y no mandan este campo
+                shipping_address   = request.data.get('shipping_address', '').strip(),
                 transfer_confirmed = bool(request.data.get('transfer_confirmed', False)),
                 status='PENDIENTE',
             )
@@ -109,5 +117,5 @@ class OrderViewSet(viewsets.GenericViewSet):
 
         order.cancel_reason = motivo
         order.status        = 'CANCELADO'
-        order.save()  # Ejecuta el rollback automático de stock que armamos en el modelo
+        order.save()
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
