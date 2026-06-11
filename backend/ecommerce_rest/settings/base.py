@@ -193,6 +193,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://0.0.0.0:8000",
+    "https://pergaming.vercel.app",
 ]
 
 
@@ -205,5 +206,5 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo: permite peticiones de cualquier origen
+CORS_ALLOW_ALL_ORIGINS = False  
 CORS_ALLOW_CREDENTIALS = True
